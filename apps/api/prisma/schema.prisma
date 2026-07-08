@@ -1,0 +1,431 @@
+// Prisma schema for Chinese Learning Platform
+// Scope: MVP (see 00_Project_Bible/00.1_Project_Overview.md, section 8)
+// Roles per 02_Information_Architecture/Permission_Matrix.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  STUDENT
+  TEACHER
+  TEACHING_ASSISTANT
+  CONTENT_MANAGER
+  FINANCE_STAFF
+  CUSTOMER_SUPPORT
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum CourseLevel {
+  HSK1
+  HSK2
+  HSK3
+  HSK4
+  HSK5
+  HSK6
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  LATE
+  GRADED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  VNPAY
+  MOMO
+  STRIPE
+  PAYPAL
+}
+
+enum NotificationType {
+  SYSTEM
+  COURSE
+  HOMEWORK
+  PAYMENT
+  MESSAGE
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  FILL_IN_BLANK
+  LISTENING
+}
+
+// ---------------------------------------------------------------------------
+// Identity
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+  phone        String?
+  roles        Role[]   @default([STUDENT])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Teacher-authored content
+  coursesCreated Course[] @relation("CourseTeacher")
+
+  // Student relations
+  enrollments         Enrollment[]
+  homeworkSubmissions HomeworkSubmission[]
+  quizAttempts        QuizAttempt[]
+  flashcards          Flashcard[]
+  payments            Payment[]
+  notifications       Notification[]
+  aiChatSessions      AiChatSession[]
+  calendarEvents      CalendarEvent[]      @relation("CalendarEventOwner")
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Course structure: Course -> Chapter -> Lesson
+// ---------------------------------------------------------------------------
+
+model Course {
+  id           String      @id @default(cuid())
+  title        String
+  slug         String      @unique
+  description  String?
+  level        CourseLevel
+  thumbnailUrl String?
+  price        Int         @default(0) // in smallest currency unit (e.g. VND)
+  isFree       Boolean     @default(false)
+  isPublished  Boolean     @default(false)
+  teacherId    String
+  teacher      User        @relation("CourseTeacher", fields: [teacherId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  chapters       Chapter[]
+  enrollments    Enrollment[]
+  calendarEvents CalendarEvent[]
+  payments       Payment[]
+
+  @@map("courses")
+}
+
+model Chapter {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lessons Lesson[]
+
+  @@index([courseId])
+  @@map("chapters")
+}
+
+model Lesson {
+  id            String   @id @default(cuid())
+  chapterId     String
+  chapter       Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title         String
+  order         Int
+  videoUrl      String?
+  content       String? // rich text / markdown body
+  isFreePreview Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vocabulary Vocabulary[]
+  grammar    Grammar[]
+  quizzes    Quiz[]
+  homework   Homework[]
+
+  @@index([chapterId])
+  @@map("lessons")
+}
+
+model Vocabulary {
+  id       String @id @default(cuid())
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  hanzi    String
+  pinyin   String
+  meaning  String
+
+  @@index([lessonId])
+  @@map("lesson_vocabulary")
+}
+
+model Grammar {
+  id          String @id @default(cuid())
+  lessonId    String
+  lesson      Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title       String
+  explanation String
+
+  @@index([lessonId])
+  @@map("lesson_grammar")
+}
+
+// ---------------------------------------------------------------------------
+// Enrollment / Progress
+// ---------------------------------------------------------------------------
+
+model Enrollment {
+  id         String           @id @default(cuid())
+  studentId  String
+  student    User             @relation(fields: [studentId], references: [id])
+  courseId   String
+  course     Course           @relation(fields: [courseId], references: [id])
+  status     EnrollmentStatus @default(ACTIVE)
+  progress   Int              @default(0) // percentage 0-100
+  enrolledAt DateTime         @default(now())
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+// ---------------------------------------------------------------------------
+// Quiz
+// ---------------------------------------------------------------------------
+
+model Quiz {
+  id        String   @id @default(cuid())
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title     String
+  createdAt DateTime @default(now())
+
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@index([lessonId])
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String       @id @default(cuid())
+  quizId        String
+  quiz          Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question      String
+  type          QuestionType
+  options       Json // array of choices, e.g. ["A", "B", "C", "D"]
+  correctAnswer Json // string or array of strings depending on type
+  order         Int          @default(0)
+
+  @@index([quizId])
+  @@map("quiz_questions")
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id])
+  answers     Json // map of questionId -> submitted answer
+  score       Int
+  submittedAt DateTime @default(now())
+
+  @@index([quizId])
+  @@index([studentId])
+  @@map("quiz_attempts")
+}
+
+// ---------------------------------------------------------------------------
+// Homework
+// ---------------------------------------------------------------------------
+
+model Homework {
+  id          String    @id @default(cuid())
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+
+  submissions HomeworkSubmission[]
+
+  @@index([lessonId])
+  @@map("homework")
+}
+
+model HomeworkSubmission {
+  id          String           @id @default(cuid())
+  homeworkId  String
+  homework    Homework         @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     User             @relation(fields: [studentId], references: [id])
+  content     String?
+  fileUrl     String?
+  status      SubmissionStatus @default(SUBMITTED)
+  grade       Int?
+  feedback    String?
+  submittedAt DateTime         @default(now())
+  gradedAt    DateTime?
+
+  @@unique([homeworkId, studentId])
+  @@index([studentId])
+  @@map("homework_submissions")
+}
+
+// ---------------------------------------------------------------------------
+// Flashcards & Dictionary
+// ---------------------------------------------------------------------------
+
+model Flashcard {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  deckName  String   @default("Default")
+  hanzi     String
+  pinyin    String
+  meaning   String
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+  @@map("flashcards")
+}
+
+model DictionaryEntry {
+  id          String       @id @default(cuid())
+  hanzi       String
+  pinyin      String
+  meaning     String
+  hskLevel    CourseLevel?
+  radical     String?
+  strokeOrder String? // URL or stroke sequence data
+  examples    Json? // array of { sentence, translation }
+  audioUrl    String?
+  synonyms    String[]
+  antonyms    String[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([hanzi])
+  @@map("dictionary_entries")
+}
+
+// ---------------------------------------------------------------------------
+// Calendar
+// ---------------------------------------------------------------------------
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id])
+  ownerId     String
+  owner       User     @relation("CalendarEventOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([ownerId])
+  @@index([courseId])
+  @@map("calendar_events")
+}
+
+// ---------------------------------------------------------------------------
+// Payment
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id            String          @id @default(cuid())
+  studentId     String
+  student       User            @relation(fields: [studentId], references: [id])
+  courseId      String
+  course        Course          @relation(fields: [courseId], references: [id])
+  amount        Int
+  currency      String          @default("VND")
+  provider      PaymentProvider
+  status        PaymentStatus   @default(PENDING)
+  transactionId String?         @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([studentId])
+  @@index([courseId])
+  @@map("payments")
+}
+
+// ---------------------------------------------------------------------------
+// Notification
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+// ---------------------------------------------------------------------------
+// AI Chat
+// ---------------------------------------------------------------------------
+
+model AiChatSession {
+  id        String   @id @default(cuid())
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id])
+  title     String   @default("New conversation")
+  createdAt DateTime @default(now())
+
+  messages AiChatMessage[]
+
+  @@index([studentId])
+  @@map("ai_chat_sessions")
+}
+
+model AiChatMessage {
+  id        String        @id @default(cuid())
+  sessionId String
+  session   AiChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      ChatRole
+  content   String
+  createdAt DateTime      @default(now())
+
+  @@index([sessionId])
+  @@map("ai_chat_messages")
+}
