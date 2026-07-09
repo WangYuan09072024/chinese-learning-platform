@@ -14,7 +14,7 @@ export class LessonsController {
   constructor(private lessonsService: LessonsService) {}
 
   @Post('chapters/:chapterId/lessons')
-  @Roles(Role.TEACHER, Role.CONTENT_MANAGER, Role.ADMIN)
+  @Roles(Role.CONTENT_MANAGER, Role.ADMIN)
   create(@Param('chapterId') chapterId: string, @CurrentUser() user: RequestUser, @Body() dto: CreateLessonDto) {
     return this.lessonsService.create(chapterId, user.userId, user.roles, dto);
   }

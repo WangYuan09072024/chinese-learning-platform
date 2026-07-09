@@ -11,34 +11,42 @@ const STAFF_ROLES: Role[] = [Role.ADMIN, Role.SUPER_ADMIN, Role.CONTENT_MANAGER]
 export class HomeworkService {
   constructor(private prisma: PrismaService) {}
 
-  private async assertLessonOwner(lessonId: string, requesterId: string, requesterRoles: string[]) {
+  private async isEntitled(courseId: string, requesterId: string, requesterRoles: string[]) {
+    const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
+    if (isStaff) return true;
+
+    const assignment = await this.prisma.courseAssignment.findUnique({
+      where: { courseId_teacherId: { courseId, teacherId: requesterId } },
+    });
+    return Boolean(assignment);
+  }
+
+  private async assertCanManageLesson(lessonId: string, requesterId: string, requesterRoles: string[]) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
       include: { chapter: { include: { course: true } } },
     });
     if (!lesson) throw new NotFoundException('Lesson not found');
 
-    const isOwner = lesson.chapter.course.teacherId === requesterId;
-    const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    if (!isOwner && !isStaff) throw new ForbiddenException('Only the course owner or staff can manage homework');
+    const entitled = await this.isEntitled(lesson.chapter.course.id, requesterId, requesterRoles);
+    if (!entitled) throw new ForbiddenException('Only the assigned teacher or staff can manage homework');
     return lesson;
   }
 
-  private async assertHomeworkOwner(homeworkId: string, requesterId: string, requesterRoles: string[]) {
+  private async assertCanManageHomework(homeworkId: string, requesterId: string, requesterRoles: string[]) {
     const homework = await this.prisma.homework.findUnique({
       where: { id: homeworkId },
       include: { lesson: { include: { chapter: { include: { course: true } } } } },
     });
     if (!homework) throw new NotFoundException('Homework not found');
 
-    const isOwner = homework.lesson.chapter.course.teacherId === requesterId;
-    const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    if (!isOwner && !isStaff) throw new ForbiddenException('Only the course owner or staff can access this');
+    const entitled = await this.isEntitled(homework.lesson.chapter.course.id, requesterId, requesterRoles);
+    if (!entitled) throw new ForbiddenException('Only the assigned teacher or staff can access this');
     return homework;
   }
 
   async createForLesson(lessonId: string, requesterId: string, requesterRoles: string[], dto: CreateHomeworkDto) {
-    await this.assertLessonOwner(lessonId, requesterId, requesterRoles);
+    await this.assertCanManageLesson(lessonId, requesterId, requesterRoles);
 
     return this.prisma.homework.create({
       data: {
@@ -70,7 +78,7 @@ export class HomeworkService {
   }
 
   async listSubmissions(homeworkId: string, requesterId: string, requesterRoles: string[]) {
-    await this.assertHomeworkOwner(homeworkId, requesterId, requesterRoles);
+    await this.assertCanManageHomework(homeworkId, requesterId, requesterRoles);
 
     return this.prisma.homeworkSubmission.findMany({
       where: { homeworkId },
@@ -86,9 +94,8 @@ export class HomeworkService {
     });
     if (!submission) throw new NotFoundException('Submission not found');
 
-    const isOwner = submission.homework.lesson.chapter.course.teacherId === requesterId;
-    const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    if (!isOwner && !isStaff) throw new ForbiddenException('Only the course owner or staff can grade this');
+    const entitled = await this.isEntitled(submission.homework.lesson.chapter.course.id, requesterId, requesterRoles);
+    if (!entitled) throw new ForbiddenException('Only the assigned teacher or staff can grade this');
 
     return this.prisma.homeworkSubmission.update({
       where: { id: submissionId },

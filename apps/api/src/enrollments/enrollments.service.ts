@@ -13,10 +13,12 @@ export class EnrollmentsService {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
 
-    const isOwner = course.teacherId === requesterId;
     const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    if (!isOwner && !isStaff) {
-      throw new ForbiddenException('Only the course owner or staff can manage enrollment');
+    if (!isStaff) {
+      const assignment = await this.prisma.courseAssignment.findUnique({
+        where: { courseId_teacherId: { courseId, teacherId: requesterId } },
+      });
+      if (!assignment) throw new ForbiddenException('Only the assigned teacher or staff can manage enrollment');
     }
     return course;
   }

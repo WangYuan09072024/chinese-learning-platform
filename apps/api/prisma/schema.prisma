@@ -99,6 +99,10 @@ model User {
   // Teacher-authored content
   coursesCreated Course[] @relation("CourseTeacher")
 
+  // Courses this user is assigned to teach (Permission_Matrix.md: Admin builds
+  // curriculum, assigned teachers teach/grade/assign homework on it)
+  teachingAssignments CourseAssignment[]
+
   // Student relations
   enrollments         Enrollment[]
   homeworkSubmissions HomeworkSubmission[]
@@ -135,8 +139,25 @@ model Course {
   enrollments    Enrollment[]
   calendarEvents CalendarEvent[]
   payments       Payment[]
+  assignments    CourseAssignment[]
 
   @@map("courses")
+}
+
+// A teacher assigned by an Admin/Content Manager to teach a specific course
+// (grade homework, assign homework, manage enrollment). Distinct from
+// Course.teacherId, which just tracks who authored the curriculum.
+model CourseAssignment {
+  id         String   @id @default(cuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacherId  String
+  teacher    User     @relation(fields: [teacherId], references: [id])
+  assignedAt DateTime @default(now())
+
+  @@unique([courseId, teacherId])
+  @@index([teacherId])
+  @@map("course_assignments")
 }
 
 model Chapter {

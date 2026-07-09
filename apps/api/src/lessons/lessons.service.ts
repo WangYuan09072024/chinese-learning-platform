@@ -10,13 +10,12 @@ export class LessonsService {
   constructor(private prisma: PrismaService) {}
 
   async create(chapterId: string, requesterId: string, requesterRoles: string[], dto: CreateLessonDto) {
-    const chapter = await this.prisma.chapter.findUnique({ where: { id: chapterId }, include: { course: true } });
+    const chapter = await this.prisma.chapter.findUnique({ where: { id: chapterId } });
     if (!chapter) throw new NotFoundException('Chapter not found');
 
-    const isOwner = chapter.course.teacherId === requesterId;
     const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    if (!isOwner && !isStaff) {
-      throw new ForbiddenException('Only the course owner or staff can add lessons');
+    if (!isStaff) {
+      throw new ForbiddenException('Only Admin/Content Manager can add lessons');
     }
 
     return this.prisma.lesson.create({
@@ -44,10 +43,17 @@ export class LessonsService {
     });
     if (!lesson) throw new NotFoundException('Lesson not found');
 
-    const isOwner = lesson.chapter.course.teacherId === requesterId;
     const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
+    const isAssignedTeacher = isStaff
+      ? false
+      : Boolean(
+          await this.prisma.courseAssignment.findUnique({
+            where: { courseId_teacherId: { courseId: lesson.chapter.course.id, teacherId: requesterId } },
+          }),
+        );
+    const isTeachingStaff = isStaff || isAssignedTeacher;
 
-    if (!lesson.isFreePreview && !isOwner && !isStaff) {
+    if (!lesson.isFreePreview && !isTeachingStaff) {
       const enrollment = await this.prisma.enrollment.findUnique({
         where: { studentId_courseId: { studentId: requesterId, courseId: lesson.chapter.course.id } },
       });
@@ -56,10 +62,10 @@ export class LessonsService {
       }
     }
 
-    // Hide correct answers from non-owner/non-staff viewers, and surface the
-    // requester's own submission/attempts so the UI can show prior results
-    // instead of a blank form.
-    if (!isOwner && !isStaff) {
+    // Hide correct answers from students, and surface the requester's own
+    // submission/attempts so the UI can show prior results instead of a
+    // blank form.
+    if (!isTeachingStaff) {
       const homeworkWithMine = await Promise.all(
         lesson.homework.map(async (hw) => ({
           ...hw,

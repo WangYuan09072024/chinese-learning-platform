@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSession, getToken } from '@/lib/session';
 import { apiFetch } from '@/lib/api';
+import { isContentStaff } from '@/lib/roles';
 import { CreateHomeworkForm } from '@/components/CreateHomeworkForm';
 import { GradeSubmissionForm } from '@/components/GradeSubmissionForm';
 import { CreateQuizForm } from '@/components/CreateQuizForm';
@@ -52,6 +53,7 @@ export default async function TeacherLessonPage({ params }: { params: Promise<{ 
   const { slug, lessonId } = await params;
   const session = await getSession();
   if (!session) redirect('/login');
+  const staff = isContentStaff(session.roles);
 
   const token = await getToken();
   const lesson = await apiFetch<Lesson>(`/lessons/${lessonId}`, { token });
@@ -111,7 +113,11 @@ export default async function TeacherLessonPage({ params }: { params: Promise<{ 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium">Quiz</h2>
         {!quiz ? (
-          <CreateQuizForm revalidateTo={revalidateTo} lessonId={lessonId} />
+          staff ? (
+            <CreateQuizForm revalidateTo={revalidateTo} lessonId={lessonId} />
+          ) : (
+            <p className="text-sm text-zinc-500">Bài học này chưa có quiz.</p>
+          )
         ) : (
           <div className="flex flex-col gap-3">
             <p className="font-medium">{quiz.title}</p>

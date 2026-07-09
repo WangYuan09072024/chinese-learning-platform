@@ -15,7 +15,7 @@ export class QuizController {
   constructor(private quizService: QuizService) {}
 
   @Post('lessons/:lessonId/quiz')
-  @Roles(Role.TEACHER, Role.CONTENT_MANAGER, Role.ADMIN)
+  @Roles(Role.CONTENT_MANAGER, Role.ADMIN)
   create(@Param('lessonId') lessonId: string, @CurrentUser() user: RequestUser, @Body() dto: CreateQuizDto) {
     return this.quizService.createForLesson(lessonId, user.userId, user.roles, dto);
   }
@@ -31,7 +31,7 @@ export class QuizController {
   }
 
   @Get('quiz/:id/attempts')
-  @Roles(Role.TEACHER, Role.CONTENT_MANAGER, Role.ADMIN)
+  @Roles(Role.TEACHER, Role.TEACHING_ASSISTANT, Role.CONTENT_MANAGER, Role.ADMIN)
   listAttempts(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.quizService.listAttempts(id, user.userId, user.roles);
   }

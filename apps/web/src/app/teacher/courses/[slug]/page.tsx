@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getSession, getToken } from '@/lib/session';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, ApiError } from '@/lib/api';
+import { isContentStaff } from '@/lib/roles';
 import { CreateChapterForm } from '@/components/CreateChapterForm';
 import { CreateLessonForm } from '@/components/CreateLessonForm';
 import { EnrollStudentForm } from '@/components/EnrollStudentForm';
+import { AssignTeacherForm } from '@/components/AssignTeacherForm';
 
 interface LessonSummary {
   id: string;
@@ -24,7 +26,6 @@ interface Course {
   id: string;
   title: string;
   slug: string;
-  teacherId: string;
   chapters: Chapter[];
 }
 
@@ -34,7 +35,10 @@ interface Enrollment {
   enrolledAt: string;
 }
 
-const STAFF_ROLES = ['CONTENT_MANAGER', 'ADMIN', 'SUPER_ADMIN'];
+interface TeacherAssignment {
+  id: string;
+  teacher: { id: string; name: string; email: string };
+}
 
 export default async function TeacherCourseManagePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -44,17 +48,33 @@ export default async function TeacherCourseManagePage({ params }: { params: Prom
   const course = await apiFetch<Course | null>(`/courses/${slug}`);
   if (!course) notFound();
 
-  const isOwner = course.teacherId === session.userId;
-  const isStaff = session.roles.some((r) => STAFF_ROLES.includes(r));
-  if (!isOwner && !isStaff) redirect('/teacher/dashboard');
+  const staff = isContentStaff(session.roles);
+  const token = await getToken();
 
-  const students = await apiFetch<Enrollment[]>(`/courses/${course.id}/students`, { token: await getToken() });
+  let students: Enrollment[];
+  try {
+    students = await apiFetch<Enrollment[]>(`/courses/${course.id}/students`, { token });
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 403) {
+      return (
+        <div className="flex flex-col items-center gap-3 p-12 text-center">
+          <p className="text-lg font-medium">Bạn chưa được chỉ định dạy khóa học này.</p>
+          <p className="text-sm text-zinc-500">Liên hệ Admin để được gán vào khóa học.</p>
+        </div>
+      );
+    }
+    throw err;
+  }
+
+  const teachers = staff ? await apiFetch<TeacherAssignment[]>(`/courses/${course.id}/teachers`, { token }) : [];
 
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-semibold">{course.title}</h1>
-        <p className="text-sm text-zinc-500">Quản lý nội dung và học viên của khóa học</p>
+        <p className="text-sm text-zinc-500">
+          {staff ? 'Quản lý nội dung, giáo viên và học viên của khóa học' : 'Dạy học, giao bài tập và chấm điểm'}
+        </p>
       </div>
 
       <section className="flex flex-col gap-4">
@@ -72,11 +92,25 @@ export default async function TeacherCourseManagePage({ params }: { params: Prom
                 </li>
               ))}
             </ul>
-            <CreateLessonForm courseSlug={slug} chapterId={chapter.id} nextOrder={chapter.lessons.length} />
+            {staff && <CreateLessonForm courseSlug={slug} chapterId={chapter.id} nextOrder={chapter.lessons.length} />}
           </div>
         ))}
-        <CreateChapterForm courseSlug={slug} courseId={course.id} nextOrder={course.chapters.length} />
+        {staff && <CreateChapterForm courseSlug={slug} courseId={course.id} nextOrder={course.chapters.length} />}
       </section>
+
+      {staff && (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-medium">Giáo viên phụ trách ({teachers.length})</h2>
+          <ul className="flex flex-col gap-2 text-sm">
+            {teachers.map((t) => (
+              <li key={t.id} className="rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-800">
+                {t.teacher.name} <span className="text-zinc-400">({t.teacher.email})</span>
+              </li>
+            ))}
+          </ul>
+          <AssignTeacherForm courseSlug={slug} courseId={course.id} />
+        </section>
+      )}
 
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-medium">Học viên đã ghi danh ({students.length})</h2>

@@ -3,7 +3,7 @@ import { decodeJwt } from 'jose';
 
 const ROLE_PREFIXES: Record<string, string[]> = {
   '/student': ['STUDENT'],
-  '/teacher': ['TEACHER', 'TEACHING_ASSISTANT'],
+  '/teacher': ['TEACHER', 'TEACHING_ASSISTANT', 'CONTENT_MANAGER', 'ADMIN', 'SUPER_ADMIN'],
   '/admin': ['CONTENT_MANAGER', 'FINANCE_STAFF', 'CUSTOMER_SUPPORT', 'ADMIN', 'SUPER_ADMIN'],
 };
 

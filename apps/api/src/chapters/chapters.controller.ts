@@ -14,7 +14,7 @@ export class ChaptersController {
   constructor(private chaptersService: ChaptersService) {}
 
   @Post()
-  @Roles(Role.TEACHER, Role.CONTENT_MANAGER, Role.ADMIN)
+  @Roles(Role.CONTENT_MANAGER, Role.ADMIN)
   create(@Param('courseId') courseId: string, @CurrentUser() user: RequestUser, @Body() dto: CreateChapterDto) {
     return this.chaptersService.create(courseId, user.userId, user.roles, dto);
   }

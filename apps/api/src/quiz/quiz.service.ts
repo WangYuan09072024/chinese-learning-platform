@@ -19,20 +19,16 @@ function isCorrect(correctAnswer: unknown, submitted: unknown): boolean {
 export class QuizService {
   constructor(private prisma: PrismaService) {}
 
-  private async assertLessonOwner(lessonId: string, requesterId: string, requesterRoles: string[]) {
-    const lesson = await this.prisma.lesson.findUnique({
-      where: { id: lessonId },
-      include: { chapter: { include: { course: true } } },
-    });
+  private async assertCanManage(lessonId: string, requesterRoles: string[]) {
+    const lesson = await this.prisma.lesson.findUnique({ where: { id: lessonId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
 
-    const isOwner = lesson.chapter.course.teacherId === requesterId;
     const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    if (!isOwner && !isStaff) throw new ForbiddenException('Only the course owner or staff can manage quizzes');
+    if (!isStaff) throw new ForbiddenException('Only Admin/Content Manager can manage quizzes');
   }
 
   async createForLesson(lessonId: string, requesterId: string, requesterRoles: string[], dto: CreateQuizDto) {
-    await this.assertLessonOwner(lessonId, requesterId, requesterRoles);
+    await this.assertCanManage(lessonId, requesterRoles);
 
     return this.prisma.quiz.create({
       data: {
@@ -52,24 +48,32 @@ export class QuizService {
     });
   }
 
-  private async isOwnerOrStaff(quizId: string, requesterId: string, requesterRoles: string[]) {
+  private async isTeachingStaff(quizId: string, requesterId: string, requesterRoles: string[]) {
     const quiz = await this.prisma.quiz.findUnique({
       where: { id: quizId },
       include: { lesson: { include: { chapter: { include: { course: true } } } } },
     });
     if (!quiz) throw new NotFoundException('Quiz not found');
 
-    const isOwner = quiz.lesson.chapter.course.teacherId === requesterId;
     const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    return { quiz, isOwner, isStaff };
+    const isAssignedTeacher = isStaff
+      ? false
+      : Boolean(
+          await this.prisma.courseAssignment.findUnique({
+            where: {
+              courseId_teacherId: { courseId: quiz.lesson.chapter.course.id, teacherId: requesterId },
+            },
+          }),
+        );
+    return { quiz, isEntitled: isStaff || isAssignedTeacher };
   }
 
   async findByIdForUser(quizId: string, requesterId: string, requesterRoles: string[]) {
     const quiz = await this.prisma.quiz.findUnique({ where: { id: quizId }, include: { questions: true } });
     if (!quiz) throw new NotFoundException('Quiz not found');
 
-    const { isOwner, isStaff } = await this.isOwnerOrStaff(quizId, requesterId, requesterRoles);
-    if (isOwner || isStaff) return quiz;
+    const { isEntitled } = await this.isTeachingStaff(quizId, requesterId, requesterRoles);
+    if (isEntitled) return quiz;
 
     return {
       ...quiz,
@@ -93,8 +97,8 @@ export class QuizService {
   }
 
   async listAttempts(quizId: string, requesterId: string, requesterRoles: string[]) {
-    const { isOwner, isStaff } = await this.isOwnerOrStaff(quizId, requesterId, requesterRoles);
-    if (!isOwner && !isStaff) throw new ForbiddenException('Only the course owner or staff can view attempts');
+    const { isEntitled } = await this.isTeachingStaff(quizId, requesterId, requesterRoles);
+    if (!isEntitled) throw new ForbiddenException('Only the assigned teacher or staff can view attempts');
 
     return this.prisma.quizAttempt.findMany({
       where: { quizId },

@@ -13,10 +13,9 @@ export class ChaptersService {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
 
-    const isOwner = course.teacherId === requesterId;
     const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
-    if (!isOwner && !isStaff) {
-      throw new ForbiddenException('Only the course owner or staff can add chapters');
+    if (!isStaff) {
+      throw new ForbiddenException('Only Admin/Content Manager can add chapters');
     }
 
     return this.prisma.chapter.create({
