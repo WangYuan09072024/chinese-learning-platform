@@ -3,6 +3,7 @@ import { getSession, getToken } from '@/lib/session';
 import { apiFetch, ApiError } from '@/lib/api';
 import { HomeworkSubmissionForm } from '@/components/HomeworkSubmissionForm';
 import { TakeQuizForm } from '@/components/TakeQuizForm';
+import { markLessonComplete } from '@/actions/lesson-progress';
 
 interface Submission {
   content: string | null;
@@ -41,6 +42,7 @@ interface Lesson {
   title: string;
   videoUrl: string | null;
   content: string | null;
+  isCompleted?: boolean;
   homework: Homework[];
   quizzes: Quiz[];
 }
@@ -74,7 +76,20 @@ export default async function StudentLessonPage({ params }: { params: Promise<{ 
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-2xl font-semibold">{lesson.title}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">{lesson.title}</h1>
+        {lesson.isCompleted ? (
+          <span className="whitespace-nowrap rounded-md bg-green-100 px-3 py-1.5 text-sm font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
+            ✓ Đã học xong
+          </span>
+        ) : (
+          <form action={markLessonComplete.bind(null, revalidateTo, lessonId)}>
+            <button type="submit" className="whitespace-nowrap rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium dark:border-zinc-700">
+              Đánh dấu đã học xong
+            </button>
+          </form>
+        )}
+      </div>
 
       {lesson.videoUrl && (
         <div className="aspect-video w-full max-w-2xl overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">

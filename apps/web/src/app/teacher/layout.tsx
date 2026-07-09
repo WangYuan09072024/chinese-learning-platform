@@ -15,7 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Announcements' },
   { label: 'Messages' },
   { label: 'Reports' },
-  { label: 'Profile' },
+  { label: 'Profile', href: '/teacher/profile' },
 ];
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {

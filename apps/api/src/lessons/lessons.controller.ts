@@ -23,4 +23,9 @@ export class LessonsController {
   findOne(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.lessonsService.findByIdForUser(id, user.userId, user.roles);
   }
+
+  @Post('lessons/:id/complete')
+  markComplete(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.lessonsService.markComplete(id, user.userId);
+  }
 }

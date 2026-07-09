@@ -11,6 +11,12 @@ import { LessonsModule } from './lessons/lessons.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { HomeworkModule } from './homework/homework.module';
 import { QuizModule } from './quiz/quiz.module';
+import { ProgressModule } from './progress/progress.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { FlashcardsModule } from './flashcards/flashcards.module';
+import { DictionaryModule } from './dictionary/dictionary.module';
+import { CalendarModule } from './calendar/calendar.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
@@ -24,6 +30,12 @@ import { QuizModule } from './quiz/quiz.module';
     EnrollmentsModule,
     HomeworkModule,
     QuizModule,
+    ProgressModule,
+    NotificationsModule,
+    FlashcardsModule,
+    DictionaryModule,
+    CalendarModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [AppService],

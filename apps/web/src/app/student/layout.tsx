@@ -6,15 +6,17 @@ import { PortalShell, type NavItem } from '@/components/PortalShell';
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/student/dashboard' },
   { label: 'My Courses' },
+  { label: 'Progress', href: '/student/progress' },
   { label: 'Homework' },
-  { label: 'Calendar' },
-  { label: 'Dictionary' },
+  { label: 'Calendar', href: '/student/calendar' },
+  { label: 'Dictionary', href: '/dictionary' },
   { label: 'AI Learning' },
-  { label: 'Flashcards' },
+  { label: 'Flashcards', href: '/student/flashcards' },
   { label: 'Exams' },
   { label: 'Certificates' },
   { label: 'Payment' },
-  { label: 'Profile' },
+  { label: 'Notifications', href: '/student/notifications' },
+  { label: 'Profile', href: '/student/profile' },
   { label: 'Settings' },
 ];
 

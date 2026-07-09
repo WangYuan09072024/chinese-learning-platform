@@ -107,6 +107,7 @@ model User {
   enrollments         Enrollment[]
   homeworkSubmissions HomeworkSubmission[]
   quizAttempts        QuizAttempt[]
+  lessonCompletions   LessonCompletion[]
   flashcards          Flashcard[]
   payments            Payment[]
   notifications       Notification[]
@@ -187,13 +188,29 @@ model Lesson {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  vocabulary Vocabulary[]
-  grammar    Grammar[]
-  quizzes    Quiz[]
-  homework   Homework[]
+  vocabulary  Vocabulary[]
+  grammar     Grammar[]
+  quizzes     Quiz[]
+  homework    Homework[]
+  completions LessonCompletion[]
 
   @@index([chapterId])
   @@map("lessons")
+}
+
+// A student marking a lesson as done; powers the Progress page and each
+// course's completion percentage.
+model LessonCompletion {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id])
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([studentId, lessonId])
+  @@index([lessonId])
+  @@map("lesson_completions")
 }
 
 model Vocabulary {
@@ -420,6 +437,20 @@ model Notification {
 
   @@index([userId])
   @@map("notifications")
+}
+
+// ---------------------------------------------------------------------------
+// Public site: Contact form submissions
+// ---------------------------------------------------------------------------
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
 }
 
 // ---------------------------------------------------------------------------

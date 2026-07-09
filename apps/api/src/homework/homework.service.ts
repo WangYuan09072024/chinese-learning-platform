@@ -3,13 +3,17 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateHomeworkDto } from './dto/create-homework.dto';
 import { SubmitHomeworkDto } from './dto/submit-homework.dto';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
-import { Role, SubmissionStatus } from '@prisma/client';
+import { Role, SubmissionStatus, NotificationType } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const STAFF_ROLES: Role[] = [Role.ADMIN, Role.SUPER_ADMIN, Role.CONTENT_MANAGER];
 
 @Injectable()
 export class HomeworkService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   private async isEntitled(courseId: string, requesterId: string, requesterRoles: string[]) {
     const isStaff = requesterRoles.some((r) => STAFF_ROLES.includes(r as Role));
@@ -97,9 +101,18 @@ export class HomeworkService {
     const entitled = await this.isEntitled(submission.homework.lesson.chapter.course.id, requesterId, requesterRoles);
     if (!entitled) throw new ForbiddenException('Only the assigned teacher or staff can grade this');
 
-    return this.prisma.homeworkSubmission.update({
+    const graded = await this.prisma.homeworkSubmission.update({
       where: { id: submissionId },
       data: { grade: dto.grade, feedback: dto.feedback, status: SubmissionStatus.GRADED, gradedAt: new Date() },
     });
+
+    await this.notifications.create(
+      submission.studentId,
+      NotificationType.HOMEWORK,
+      'Bài tập đã được chấm điểm',
+      `"${submission.homework.title}" đã được chấm: ${dto.grade} điểm.`,
+    );
+
+    return graded;
   }
 }

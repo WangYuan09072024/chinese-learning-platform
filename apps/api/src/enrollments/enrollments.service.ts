@@ -1,13 +1,17 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EnrollDto } from './dto/enroll.dto';
-import { Role } from '@prisma/client';
+import { Role, NotificationType } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const STAFF_ROLES: Role[] = [Role.ADMIN, Role.SUPER_ADMIN, Role.CONTENT_MANAGER];
 
 @Injectable()
 export class EnrollmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   private async assertCanManage(courseId: string, requesterId: string, requesterRoles: string[]) {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });
@@ -24,7 +28,7 @@ export class EnrollmentsService {
   }
 
   async enroll(courseId: string, requesterId: string, requesterRoles: string[], dto: EnrollDto) {
-    await this.assertCanManage(courseId, requesterId, requesterRoles);
+    const course = await this.assertCanManage(courseId, requesterId, requesterRoles);
 
     const student = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!student) throw new NotFoundException('No user found with this email');
@@ -34,9 +38,18 @@ export class EnrollmentsService {
     });
     if (existing) throw new ConflictException('Student is already enrolled in this course');
 
-    return this.prisma.enrollment.create({
+    const enrollment = await this.prisma.enrollment.create({
       data: { studentId: student.id, courseId },
     });
+
+    await this.notifications.create(
+      student.id,
+      NotificationType.COURSE,
+      'Đã ghi danh khóa học',
+      `Bạn đã được ghi danh vào khóa học "${course.title}".`,
+    );
+
+    return enrollment;
   }
 
   async listStudents(courseId: string, requesterId: string, requesterRoles: string[]) {
