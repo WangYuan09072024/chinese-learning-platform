@@ -7,12 +7,11 @@ const STAFF_ROLES = ['CONTENT_MANAGER', 'FINANCE_STAFF', 'CUSTOMER_SUPPORT', 'AD
 // Sidebar per Admin Portal outline in 00_Project_Bible/00.1_Project_Overview.md
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard' },
-  { label: 'Users' },
-  { label: 'Students' },
-  { label: 'Teachers' },
-  { label: 'Courses' },
+  { label: 'Users', href: '/admin/users' },
+  { label: 'Courses', href: '/admin/courses' },
+  { label: 'Dictionary', href: '/dictionary' },
+  { label: 'Liên hệ', href: '/admin/contact' },
   { label: 'Lessons' },
-  { label: 'Dictionary' },
   { label: 'AI' },
   { label: 'Payments' },
   { label: 'Reports' },

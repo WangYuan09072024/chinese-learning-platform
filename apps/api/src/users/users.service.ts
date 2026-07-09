@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -45,6 +45,46 @@ export class UsersService {
         name: data.name,
         roles: data.roles ?? [Role.STUDENT],
       },
+    });
+  }
+
+  listAll(query?: string) {
+    return this.prisma.user.findMany({
+      where: query
+        ? { OR: [{ email: { contains: query, mode: 'insensitive' } }, { name: { contains: query, mode: 'insensitive' } }] }
+        : undefined,
+      select: PUBLIC_PROFILE_SELECT,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // Admin can change roles, with guardrails: a plain Admin cannot touch a
+  // Super Admin, nor grant/revoke the Super Admin role. Only a Super Admin
+  // can manage Super Admins. (Per Permission_Matrix.md.)
+  async updateRoles(targetUserId: string, requesterId: string, requesterRoles: string[], roles: Role[]) {
+    const target = await this.prisma.user.findUnique({ where: { id: targetUserId } });
+    if (!target) throw new NotFoundException('User not found');
+
+    const requesterIsSuperAdmin = requesterRoles.includes(Role.SUPER_ADMIN);
+
+    if (!requesterIsSuperAdmin) {
+      if (target.roles.includes(Role.SUPER_ADMIN)) {
+        throw new ForbiddenException('Only a Super Admin can modify a Super Admin');
+      }
+      if (roles.includes(Role.SUPER_ADMIN)) {
+        throw new ForbiddenException('Only a Super Admin can grant the Super Admin role');
+      }
+    }
+
+    const adminRoles: Role[] = [Role.ADMIN, Role.SUPER_ADMIN];
+    if (target.id === requesterId && !roles.some((r) => adminRoles.includes(r))) {
+      throw new BadRequestException('You cannot remove your own admin access');
+    }
+
+    return this.prisma.user.update({
+      where: { id: targetUserId },
+      data: { roles },
+      select: PUBLIC_PROFILE_SELECT,
     });
   }
 }
