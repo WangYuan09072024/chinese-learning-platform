@@ -6,18 +6,15 @@ const STAFF_ROLES = ['CONTENT_MANAGER', 'FINANCE_STAFF', 'CUSTOMER_SUPPORT', 'AD
 
 // Sidebar per Admin Portal outline in 00_Project_Bible/00.1_Project_Overview.md
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/admin/dashboard' },
-  { label: 'Users', href: '/admin/users' },
-  { label: 'Courses', href: '/admin/courses' },
-  { label: 'Dictionary', href: '/dictionary' },
-  { label: 'Liên hệ', href: '/admin/contact' },
-  { label: 'Lessons' },
-  { label: 'AI' },
-  { label: 'Payments' },
-  { label: 'Reports' },
-  { label: 'Notifications' },
-  { label: 'CMS' },
-  { label: 'Settings' },
+  { label: 'Trang chủ', href: '/admin/dashboard', icon: 'dashboard' },
+  { label: 'Người dùng', href: '/admin/users', icon: 'users' },
+  { label: 'Khóa học', href: '/admin/courses', icon: 'courses' },
+  { label: 'Từ điển', href: '/dictionary', icon: 'dictionary' },
+  { label: 'Liên hệ', href: '/admin/contact', icon: 'contact' },
+  { label: 'Báo cáo', icon: 'reports' },
+  { label: 'Thông báo', icon: 'notifications' },
+  { label: 'CMS', icon: 'cms' },
+  { label: 'Cài đặt', icon: 'settings' },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -27,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <PortalShell title="Admin Portal" navItems={NAV_ITEMS} user={session}>
+    <PortalShell title="Quản trị" navItems={NAV_ITEMS} user={session}>
       {children}
     </PortalShell>
   );

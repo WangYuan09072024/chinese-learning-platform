@@ -1,40 +1,29 @@
 import Link from 'next/link';
+import { Flower2 } from 'lucide-react';
+import { PublicHeader } from '@/components/PublicHeader';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-        <Link href="/" className="font-semibold">
-          Yuan Yuan
-        </Link>
-        <nav className="flex items-center gap-5 text-sm">
-          <Link href="/courses" className="hover:underline">
-            Khóa học
-          </Link>
-          <Link href="/pricing" className="hover:underline">
-            Bảng giá
-          </Link>
-          <Link href="/faq" className="hover:underline">
-            FAQ
-          </Link>
-          <Link href="/contact" className="hover:underline">
-            Liên hệ
-          </Link>
-          <Link href="/dictionary" className="hover:underline">
-            Từ điển
-          </Link>
-          <Link href="/login" className="hover:underline">
-            Đăng nhập
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-md bg-zinc-900 px-3 py-1.5 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-          >
-            Đăng ký
-          </Link>
-        </nav>
-      </header>
+      <PublicHeader />
       <main className="flex flex-1 flex-col">{children}</main>
+      <footer className="border-t border-brand-100/70 bg-cream/60 dark:border-white/10 dark:bg-zinc-900/50">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-zinc-500 sm:flex-row">
+          <div className="flex items-center gap-2">
+            <span className="grid h-7 w-7 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-sun-400 text-white">
+              <Flower2 className="h-4 w-4" />
+            </span>
+            <span className="font-bold text-zinc-700 dark:text-zinc-200">Yuan Yuan</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <Link href="/courses" className="hover:text-brand-600">Khóa học</Link>
+            <Link href="/pricing" className="hover:text-brand-600">Bảng giá</Link>
+            <Link href="/faq" className="hover:text-brand-600">FAQ</Link>
+            <Link href="/contact" className="hover:text-brand-600">Liên hệ</Link>
+          </div>
+          <span>© {new Date().getFullYear()} Yuan Yuan</span>
+        </div>
+      </footer>
     </div>
   );
 }

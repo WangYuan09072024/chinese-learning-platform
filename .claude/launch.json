@@ -6,6 +6,12 @@
       "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
       "runtimeArgs": ["node_modules/next/dist/bin/next", "dev", "apps/web", "-p", "3001"],
       "port": 3001
+    },
+    {
+      "name": "yuanyuan",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "yuanyuan-hanyu", "-l", "4321"],
+      "port": 4321
     }
   ]
 }

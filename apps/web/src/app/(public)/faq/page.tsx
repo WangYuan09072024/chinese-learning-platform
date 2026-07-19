@@ -23,13 +23,15 @@ const FAQ_ITEMS = [
 
 export default function FaqPage() {
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
-      <h1 className="text-2xl font-semibold">Câu hỏi thường gặp</h1>
-      <div className="flex flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-12">
+      <div className="text-center">
+        <h1 className="text-3xl font-extrabold sm:text-4xl">Câu hỏi thường gặp</h1>
+      </div>
+      <div className="flex flex-col gap-3">
         {FAQ_ITEMS.map((item) => (
-          <div key={item.q} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-            <p className="font-medium">{item.q}</p>
-            <p className="mt-1 text-sm text-zinc-500">{item.a}</p>
+          <div key={item.q} className="card p-5">
+            <p className="font-bold">{item.q}</p>
+            <p className="mt-1.5 text-sm text-zinc-500">{item.a}</p>
           </div>
         ))}
       </div>

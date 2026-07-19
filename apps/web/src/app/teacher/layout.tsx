@@ -5,17 +5,17 @@ import { PortalShell, type NavItem } from '@/components/PortalShell';
 
 // Sidebar per Teacher Portal outline in 00_Project_Bible/00.1_Project_Overview.md
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/teacher/dashboard' },
-  { label: 'My Classes' },
-  { label: 'Student Management' },
-  { label: 'Homework' },
-  { label: 'Quiz' },
-  { label: 'Attendance' },
-  { label: 'Calendar' },
-  { label: 'Announcements' },
-  { label: 'Messages' },
-  { label: 'Reports' },
-  { label: 'Profile', href: '/teacher/profile' },
+  { label: 'Trang chủ', href: '/teacher/dashboard', icon: 'dashboard' },
+  { label: 'Lớp học', icon: 'classes' },
+  { label: 'Học viên', icon: 'students' },
+  { label: 'Bài tập', icon: 'homework' },
+  { label: 'Quiz', icon: 'quiz' },
+  { label: 'Điểm danh', icon: 'attendance' },
+  { label: 'Lịch dạy', icon: 'calendar' },
+  { label: 'Thông báo', icon: 'announcements' },
+  { label: 'Tin nhắn', icon: 'messages' },
+  { label: 'Báo cáo', icon: 'reports' },
+  { label: 'Hồ sơ', href: '/teacher/profile', icon: 'profile' },
 ];
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +26,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   }
 
   return (
-    <PortalShell title="Teacher Portal" navItems={NAV_ITEMS} user={session}>
+    <PortalShell title="Giáo viên" navItems={NAV_ITEMS} user={session}>
       {children}
     </PortalShell>
   );

@@ -4,20 +4,15 @@ import { PortalShell, type NavItem } from '@/components/PortalShell';
 
 // Sidebar per 03_Page_Specifications/page/Student/STU-001_Dashboard.md section 6
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/student/dashboard' },
-  { label: 'My Courses' },
-  { label: 'Progress', href: '/student/progress' },
-  { label: 'Homework' },
-  { label: 'Calendar', href: '/student/calendar' },
-  { label: 'Dictionary', href: '/dictionary' },
-  { label: 'AI Learning' },
-  { label: 'Flashcards', href: '/student/flashcards' },
-  { label: 'Exams' },
-  { label: 'Certificates' },
-  { label: 'Payment' },
-  { label: 'Notifications', href: '/student/notifications' },
-  { label: 'Profile', href: '/student/profile' },
-  { label: 'Settings' },
+  { label: 'Trang chủ', href: '/student/dashboard', icon: 'dashboard' },
+  { label: 'Tiến độ', href: '/student/progress', icon: 'progress' },
+  { label: 'Lịch học', href: '/student/calendar', icon: 'calendar' },
+  { label: 'Từ điển', href: '/dictionary', icon: 'dictionary' },
+  { label: 'Flashcards', href: '/student/flashcards', icon: 'flashcards' },
+  { label: 'Thông báo', href: '/student/notifications', icon: 'notifications' },
+  { label: 'Hồ sơ', href: '/student/profile', icon: 'profile' },
+  { label: 'AI Learning', icon: 'ai' },
+  { label: 'Chứng chỉ', icon: 'certificates' },
 ];
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
@@ -27,7 +22,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
   }
 
   return (
-    <PortalShell title="Student Portal" navItems={NAV_ITEMS} user={session}>
+    <PortalShell title="Học viên" navItems={NAV_ITEMS} user={session}>
       {children}
     </PortalShell>
   );

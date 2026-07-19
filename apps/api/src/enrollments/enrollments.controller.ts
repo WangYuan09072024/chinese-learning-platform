@@ -25,6 +25,12 @@ export class EnrollmentsController {
     return this.enrollmentsService.listStudents(courseId, user.userId, user.roles);
   }
 
+  // Any authenticated user can self-enroll into a free course (no @Roles = any role)
+  @Post('courses/:courseId/self-enroll')
+  selfEnroll(@Param('courseId') courseId: string, @CurrentUser() user: RequestUser) {
+    return this.enrollmentsService.selfEnroll(courseId, user.userId);
+  }
+
   @Get('enrollments/me')
   listMine(@CurrentUser() user: RequestUser) {
     return this.enrollmentsService.listMine(user.userId);

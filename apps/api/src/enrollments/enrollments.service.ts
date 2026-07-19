@@ -52,6 +52,31 @@ export class EnrollmentsService {
     return enrollment;
   }
 
+  // Any authenticated user can self-enroll into a FREE course.
+  async selfEnroll(courseId: string, studentId: string) {
+    const course = await this.prisma.course.findUnique({ where: { id: courseId } });
+    if (!course) throw new NotFoundException('Course not found');
+    if (!course.isFree) {
+      throw new ForbiddenException('Khóa học này không miễn phí, cần được ghi danh bởi giáo viên/trung tâm.');
+    }
+
+    const existing = await this.prisma.enrollment.findUnique({
+      where: { studentId_courseId: { studentId, courseId } },
+    });
+    if (existing) return existing;
+
+    const enrollment = await this.prisma.enrollment.create({ data: { studentId, courseId } });
+
+    await this.notifications.create(
+      studentId,
+      NotificationType.COURSE,
+      'Đã đăng ký khóa học',
+      `Bạn đã đăng ký khóa học "${course.title}". Chúc bạn học vui!`,
+    );
+
+    return enrollment;
+  }
+
   async listStudents(courseId: string, requesterId: string, requesterRoles: string[]) {
     await this.assertCanManage(courseId, requesterId, requesterRoles);
 

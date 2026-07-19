@@ -7,34 +7,12 @@ export function RegisterForm() {
   const [state, action, pending] = useActionState(register, {});
 
   return (
-    <form action={action} className="flex w-full max-w-sm flex-col gap-3">
-      <input
-        name="name"
-        placeholder="Họ và tên"
-        required
-        className="rounded-md border px-3 py-2 text-sm dark:bg-zinc-900"
-      />
-      <input
-        name="email"
-        type="email"
-        placeholder="Email"
-        required
-        className="rounded-md border px-3 py-2 text-sm dark:bg-zinc-900"
-      />
-      <input
-        name="password"
-        type="password"
-        placeholder="Mật khẩu (tối thiểu 8 ký tự)"
-        required
-        minLength={8}
-        className="rounded-md border px-3 py-2 text-sm dark:bg-zinc-900"
-      />
-      {state.error && <p className="text-sm text-red-500">{state.error}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-      >
+    <form action={action} className="flex w-full flex-col gap-3">
+      <input name="name" placeholder="Họ và tên" required className="field" />
+      <input name="email" type="email" placeholder="Email" required className="field" />
+      <input name="password" type="password" placeholder="Mật khẩu (tối thiểu 8 ký tự)" required minLength={8} className="field" />
+      {state.error && <p className="text-sm font-medium text-brand-600">{state.error}</p>}
+      <button type="submit" disabled={pending} className="btn-primary mt-1 py-3">
         {pending ? 'Đang đăng ký...' : 'Đăng ký'}
       </button>
     </form>

@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { BookOpen, GraduationCap, Lock, PlayCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { getSession, getToken } from '@/lib/session';
+import { EnrollButton } from '@/components/EnrollButton';
 
 interface LessonSummary {
   id: string;
@@ -26,46 +29,95 @@ interface Course {
   chapters: Chapter[];
 }
 
+interface Enrollment {
+  course: { id: string };
+}
+
 export default async function PublicCourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const course = await apiFetch<Course | null>(`/courses/${slug}`);
   if (!course) notFound();
 
+  const session = await getSession();
+  let enrolled = false;
+  if (session) {
+    try {
+      const mine = await apiFetch<Enrollment[]>('/enrollments/me', { token: await getToken() });
+      enrolled = mine.some((e) => e.course.id === course.id);
+    } catch {
+      enrolled = false;
+    }
+  }
+
   const totalLessons = course.chapters.reduce((sum, c) => sum + c.lessons.length, 0);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-8">
-      <div>
-        <div className="text-xs font-medium uppercase text-zinc-400">{course.level}</div>
-        <h1 className="mt-1 text-2xl font-semibold">{course.title}</h1>
-        <p className="mt-2 text-zinc-500">{course.description}</p>
-        <div className="mt-3 flex items-center gap-4">
-          <span className="text-lg font-semibold">{course.isFree ? 'Miễn phí' : `${course.price.toLocaleString('vi-VN')}đ`}</span>
-          <span className="text-sm text-zinc-400">{totalLessons} bài học</span>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
+      <div className="card p-6 sm:p-8">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="chip bg-brand-100 text-brand-700">{course.level}</span>
+          {course.isFree ? (
+            <span className="chip bg-mint-100 text-mint-700">Miễn phí</span>
+          ) : (
+            <span className="chip bg-sun-100 text-sun-700">{course.price.toLocaleString('vi-VN')}đ</span>
+          )}
+          <span className="chip bg-zinc-100 text-zinc-500">
+            <BookOpen className="h-3.5 w-3.5" /> {totalLessons} bài học
+          </span>
         </div>
-        <Link
-          href="/register"
-          className="mt-4 inline-block rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Đăng ký học ngay
-        </Link>
+        <h1 className="mt-3 text-2xl font-extrabold sm:text-3xl">{course.title}</h1>
+        <p className="mt-2 text-zinc-500">{course.description}</p>
+
+        <div className="mt-5">
+          {enrolled ? (
+            <Link href={`/student/courses/${slug}`} className="btn-primary w-fit px-6 py-3 text-base">
+              <PlayCircle className="h-5 w-5" /> Vào học ngay
+            </Link>
+          ) : course.isFree ? (
+            session ? (
+              <EnrollButton courseId={course.id} slug={slug} />
+            ) : (
+              <Link href="/register" className="btn-primary w-fit px-6 py-3 text-base">
+                <GraduationCap className="h-5 w-5" /> Đăng ký học miễn phí
+              </Link>
+            )
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-zinc-500">
+                Khóa học chuyên sâu — liên hệ trung tâm để được ghi danh.
+              </p>
+              <Link href="/contact" className="btn-primary w-fit px-6 py-3 text-base">
+                Liên hệ đăng ký
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Nội dung khóa học</h2>
-        {course.chapters.map((chapter) => (
-          <div key={chapter.id} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-            <h3 className="font-medium">{chapter.title}</h3>
-            <ul className="mt-2 flex flex-col gap-1 pl-4 text-sm">
-              {chapter.lessons.map((lesson) => (
-                <li key={lesson.id} className="list-disc text-zinc-600 dark:text-zinc-300">
-                  {lesson.title}
-                  {lesson.isFreePreview && <span className="ml-2 text-xs text-zinc-400">(học thử)</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <h2 className="text-lg font-extrabold">Nội dung khóa học</h2>
+        {course.chapters.length === 0 ? (
+          <p className="text-sm text-zinc-500">Nội dung đang được cập nhật.</p>
+        ) : (
+          course.chapters.map((chapter) => (
+            <div key={chapter.id} className="card p-5">
+              <h3 className="font-bold">{chapter.title}</h3>
+              <ul className="mt-2 flex flex-col gap-1.5 text-sm">
+                {chapter.lessons.map((lesson) => (
+                  <li key={lesson.id} className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+                    {lesson.isFreePreview ? (
+                      <PlayCircle className="h-4 w-4 text-mint-500" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-zinc-300" />
+                    )}
+                    {lesson.title}
+                    {lesson.isFreePreview && <span className="chip bg-mint-100 text-mint-700">học thử</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        )}
       </section>
     </div>
   );

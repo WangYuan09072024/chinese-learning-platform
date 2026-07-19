@@ -13,3 +13,7 @@ Thumbs.db
 coverage/
 .turbo/
 *.tsbuildinfo
+
+# Separate standalone HSK static site (not part of the platform)
+yuanyuan-hanyu/
+yuanyuan-hanyu.zip

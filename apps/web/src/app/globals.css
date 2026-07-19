@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand — warm friendly coral/rose (auspicious red, but soft & cheerful) */
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe4e6;
+  --color-brand-200: #fecdd3;
+  --color-brand-300: #fda4af;
+  --color-brand-400: #fb7185;
+  --color-brand-500: #f43f5e;
+  --color-brand-600: #e11d48;
+  --color-brand-700: #be123c;
+
+  /* Sun — cheerful amber accent */
+  --color-sun-100: #fef3c7;
+  --color-sun-200: #fde68a;
+  --color-sun-300: #fcd34d;
+  --color-sun-400: #fbbf24;
+  --color-sun-500: #f59e0b;
+
+  /* Mint — fresh teal secondary */
+  --color-mint-100: #ccfbf1;
+  --color-mint-200: #99f6e4;
+  --color-mint-300: #5eead4;
+  --color-mint-400: #2dd4bf;
+  --color-mint-500: #14b8a6;
+
+  /* Grape — playful purple */
+  --color-grape-100: #ede9fe;
+  --color-grape-300: #c4b5fd;
+  --color-grape-400: #a78bfa;
+  --color-grape-500: #8b5cf6;
+
+  /* Sky — soft blue */
+  --color-sky-100: #e0f2fe;
+  --color-sky-300: #7dd3fc;
+  --color-sky-400: #38bdf8;
+
+  --color-cream: #fff8f3;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --background: #fff8f3;
+  --foreground: #3b2f2a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1c1917;
+    --foreground: #f5f0eb;
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 600px at 100% -10%, #ffe4e6 0%, transparent 55%),
+    radial-gradient(900px 500px at -10% 10%, #ccfbf1 0%, transparent 50%),
+    var(--background);
+  background-repeat: no-repeat;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background:
+      radial-gradient(1200px 600px at 100% -10%, #4c1d24 0%, transparent 55%),
+      radial-gradient(900px 500px at -10% 10%, #10403b 0%, transparent 50%),
+      var(--background);
+  }
+}
+
+/* Friendly focus ring */
+*:focus-visible {
+  outline: 2px solid var(--color-brand-400);
+  outline-offset: 2px;
+}
+
+/* Reusable component classes */
+@layer components {
+  .card {
+    @apply rounded-2xl border border-brand-100/70 bg-white/80 shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-zinc-900/70;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 active:scale-[0.98] disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-200 bg-white/70 px-5 py-2.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 active:scale-[0.98] dark:border-white/10 dark:bg-zinc-900/60 dark:text-brand-200;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-brand-100 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-zinc-400 focus:border-brand-300 dark:border-white/10 dark:bg-zinc-900;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
 }
