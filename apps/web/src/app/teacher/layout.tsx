@@ -15,15 +15,14 @@ export default async function TeacherLayout({ children }: { children: React.Reac
 
   const navItems: NavItem[] = [
     { label: t('nav.home'), href: '/teacher/dashboard', icon: 'dashboard' },
-    { label: t('nav.classes'), icon: 'classes' },
-    { label: t('nav.students'), icon: 'students' },
-    { label: t('nav.homework'), icon: 'homework' },
-    { label: t('nav.quiz'), icon: 'quiz' },
-    { label: t('nav.attendance'), icon: 'attendance' },
-    { label: t('nav.teachSchedule'), icon: 'calendar' },
-    { label: t('nav.announcements'), icon: 'announcements' },
+    { label: t('nav.classes'), href: '/teacher/classes', icon: 'classes' },
+    { label: t('nav.students'), href: '/teacher/students', icon: 'students' },
+    { label: t('nav.homework'), href: '/teacher/homework', icon: 'homework' },
+    { label: t('nav.quiz'), href: '/teacher/quiz', icon: 'quiz' },
+    { label: t('nav.attendance'), href: '/teacher/attendance', icon: 'attendance' },
+    { label: t('nav.announcements'), href: '/teacher/announcements', icon: 'announcements' },
+    { label: t('nav.reports'), href: '/teacher/reports', icon: 'reports' },
     { label: t('nav.messages'), icon: 'messages' },
-    { label: t('nav.reports'), icon: 'reports' },
     { label: t('nav.profile'), href: '/teacher/profile', icon: 'profile' },
   ];
 

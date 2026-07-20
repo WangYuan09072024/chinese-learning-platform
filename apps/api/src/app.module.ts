@@ -18,6 +18,9 @@ import { DictionaryModule } from './dictionary/dictionary.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { ContactModule } from './contact/contact.module';
 import { SessionsModule } from './sessions/sessions.module';
+import { TeacherModule } from './teacher/teacher.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { SessionsModule } from './sessions/sessions.module';
     CalendarModule,
     ContactModule,
     SessionsModule,
+    TeacherModule,
+    AnnouncementsModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
