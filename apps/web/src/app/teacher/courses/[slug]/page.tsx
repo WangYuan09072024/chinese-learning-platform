@@ -7,6 +7,8 @@ import { CreateChapterForm } from '@/components/CreateChapterForm';
 import { CreateLessonForm } from '@/components/CreateLessonForm';
 import { EnrollStudentForm } from '@/components/EnrollStudentForm';
 import { AssignTeacherForm } from '@/components/AssignTeacherForm';
+import { CreateSessionForm } from '@/components/CreateSessionForm';
+import { deleteSession } from '@/actions/sessions';
 
 interface LessonSummary {
   id: string;
@@ -40,6 +42,14 @@ interface TeacherAssignment {
   teacher: { id: string; name: string; email: string };
 }
 
+interface ClassSessionItem {
+  id: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+  joinUrl: string | null;
+}
+
 export default async function TeacherCourseManagePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const session = await getSession();
@@ -67,6 +77,10 @@ export default async function TeacherCourseManagePage({ params }: { params: Prom
   }
 
   const teachers = staff ? await apiFetch<TeacherAssignment[]>(`/courses/${course.id}/teachers`, { token }) : [];
+  const sessions = await apiFetch<ClassSessionItem[]>(`/courses/${course.id}/sessions`, { token });
+
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
   return (
     <div className="flex flex-col gap-8">
@@ -111,6 +125,31 @@ export default async function TeacherCourseManagePage({ params }: { params: Prom
           <AssignTeacherForm courseSlug={slug} courseId={course.id} />
         </section>
       )}
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium">Lịch dạy ({sessions.length})</h2>
+        <ul className="flex flex-col gap-2 text-sm">
+          {sessions.map((s) => (
+            <li key={s.id} className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-800">
+              <div>
+                <span className="font-medium">{s.title}</span>{' '}
+                <span className="text-zinc-400">{fmt(s.startTime)} – {new Date(s.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                {s.joinUrl ? (
+                  <a href={s.joinUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-xs font-semibold text-brand-600 underline">
+                    link vào lớp
+                  </a>
+                ) : (
+                  <span className="ml-2 text-xs text-sun-600">chưa có link</span>
+                )}
+              </div>
+              <form action={deleteSession.bind(null, slug, s.id)}>
+                <button type="submit" className="text-xs text-brand-600 hover:underline">Xóa</button>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <CreateSessionForm courseSlug={slug} courseId={course.id} />
+      </section>
 
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-medium">Học viên đã ghi danh ({students.length})</h2>

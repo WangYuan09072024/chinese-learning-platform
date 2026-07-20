@@ -113,6 +113,7 @@ model User {
   notifications       Notification[]
   aiChatSessions      AiChatSession[]
   calendarEvents      CalendarEvent[]      @relation("CalendarEventOwner")
+  taughtSessions      ClassSession[]
 
   @@map("users")
 }
@@ -141,8 +142,29 @@ model Course {
   calendarEvents CalendarEvent[]
   payments       Payment[]
   assignments    CourseAssignment[]
+  classSessions  ClassSession[]
 
   @@map("courses")
+}
+
+// A live/online class session scheduled by the assigned teacher for a course.
+// Enrolled students see it on their calendar; the teacher adds a join link
+// (ideally at least a day before the session starts).
+model ClassSession {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacherId String
+  teacher   User     @relation(fields: [teacherId], references: [id])
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  joinUrl   String?
+  createdAt DateTime @default(now())
+
+  @@index([courseId])
+  @@index([startTime])
+  @@map("class_sessions")
 }
 
 // A teacher assigned by an Admin/Content Manager to teach a specific course

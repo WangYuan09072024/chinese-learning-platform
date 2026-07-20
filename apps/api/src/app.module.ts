@@ -17,6 +17,7 @@ import { FlashcardsModule } from './flashcards/flashcards.module';
 import { DictionaryModule } from './dictionary/dictionary.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { ContactModule } from './contact/contact.module';
+import { SessionsModule } from './sessions/sessions.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ContactModule } from './contact/contact.module';
     DictionaryModule,
     CalendarModule,
     ContactModule,
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
