@@ -16,7 +16,10 @@ export default async function LoginPage() {
           <p className="text-sm text-zinc-500">{t('auth.loginSubtitle')}</p>
         </div>
         <LoginForm locale={locale} />
-        <p className="mt-5 text-center text-sm text-zinc-500">
+        <p className="mt-3 text-center text-sm">
+          <Link href="/forgot-password" className="text-brand-600 hover:underline">Quên mật khẩu?</Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-zinc-500">
           {t('auth.noAccount')}{' '}
           <Link href="/register" className="font-semibold text-brand-600 hover:underline">
             {t('auth.registerNow')}

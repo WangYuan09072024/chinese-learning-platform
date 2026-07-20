@@ -123,8 +123,24 @@ model User {
   taughtSessions      ClassSession[]
   announcements       Announcement[]       @relation("AnnouncementAuthor")
   attendanceRecords   AttendanceRecord[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
+}
+
+// A one-time token for resetting a forgotten password. We store only a hash of
+// the token; the raw token is emailed to the user as a reset link.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 // ---------------------------------------------------------------------------

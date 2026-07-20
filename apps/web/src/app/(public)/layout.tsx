@@ -23,6 +23,8 @@ export default async function PublicLayout({ children }: { children: React.React
             <Link href="/pricing" className="hover:text-brand-600">{t('nav.pricing')}</Link>
             <Link href="/faq" className="hover:text-brand-600">{t('nav.faq')}</Link>
             <Link href="/contact" className="hover:text-brand-600">{t('nav.contact')}</Link>
+            <Link href="/terms" className="hover:text-brand-600">Điều khoản</Link>
+            <Link href="/privacy" className="hover:text-brand-600">Bảo mật</Link>
           </div>
           <span>© {new Date().getFullYear()} Yuan Yuan</span>
         </div>
