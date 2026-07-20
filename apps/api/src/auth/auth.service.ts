@@ -63,7 +63,7 @@ export class AuthService {
         data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + RESET_TTL_MS) },
       });
 
-      const webUrl = process.env.WEB_URL ?? 'http://localhost:3001';
+      const webUrl = process.env.WEB_ORIGIN ?? process.env.WEB_URL ?? 'http://localhost:3001';
       const resetUrl = `${webUrl}/reset-password?token=${rawToken}`;
       await this.mail.sendPasswordReset(user.email, user.name, resetUrl);
     }
