@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { BookOpen, GraduationCap, Lock, PlayCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { getSession, getToken } from '@/lib/session';
+import { getLocale, getT } from '@/lib/i18n/server';
 import { EnrollButton } from '@/components/EnrollButton';
 
 interface LessonSummary {
@@ -35,6 +36,7 @@ interface Enrollment {
 
 export default async function PublicCourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const [locale, t] = await Promise.all([getLocale(), getT()]);
   const course = await apiFetch<Course | null>(`/courses/${slug}`);
   if (!course) notFound();
 
@@ -57,12 +59,12 @@ export default async function PublicCourseDetailPage({ params }: { params: Promi
         <div className="flex flex-wrap items-center gap-2">
           <span className="chip bg-brand-100 text-brand-700">{course.level}</span>
           {course.isFree ? (
-            <span className="chip bg-mint-100 text-mint-700">Miễn phí</span>
+            <span className="chip bg-mint-100 text-mint-700">{t('common.free')}</span>
           ) : (
             <span className="chip bg-sun-100 text-sun-700">{course.price.toLocaleString('vi-VN')}đ</span>
           )}
           <span className="chip bg-zinc-100 text-zinc-500">
-            <BookOpen className="h-3.5 w-3.5" /> {totalLessons} bài học
+            <BookOpen className="h-3.5 w-3.5" /> {totalLessons} {t('courses.lessons')}
           </span>
         </div>
         <h1 className="mt-3 text-2xl font-extrabold sm:text-3xl">{course.title}</h1>
@@ -71,23 +73,21 @@ export default async function PublicCourseDetailPage({ params }: { params: Promi
         <div className="mt-5">
           {enrolled ? (
             <Link href={`/student/courses/${slug}`} className="btn-primary w-fit px-6 py-3 text-base">
-              <PlayCircle className="h-5 w-5" /> Vào học ngay
+              <PlayCircle className="h-5 w-5" /> {t('courses.enterLearn')}
             </Link>
           ) : course.isFree ? (
             session ? (
-              <EnrollButton courseId={course.id} slug={slug} />
+              <EnrollButton courseId={course.id} slug={slug} locale={locale} />
             ) : (
               <Link href="/register" className="btn-primary w-fit px-6 py-3 text-base">
-                <GraduationCap className="h-5 w-5" /> Đăng ký học miễn phí
+                <GraduationCap className="h-5 w-5" /> {t('courses.enrollFree')}
               </Link>
             )
           ) : (
             <div className="flex flex-col gap-2">
-              <p className="text-sm text-zinc-500">
-                Khóa học chuyên sâu — liên hệ trung tâm để được ghi danh.
-              </p>
+              <p className="text-sm text-zinc-500">{t('courses.deepNote')}</p>
               <Link href="/contact" className="btn-primary w-fit px-6 py-3 text-base">
-                Liên hệ đăng ký
+                {t('courses.contactEnroll')}
               </Link>
             </div>
           )}
@@ -95,9 +95,9 @@ export default async function PublicCourseDetailPage({ params }: { params: Promi
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-extrabold">Nội dung khóa học</h2>
+        <h2 className="text-lg font-extrabold">{t('courses.content')}</h2>
         {course.chapters.length === 0 ? (
-          <p className="text-sm text-zinc-500">Nội dung đang được cập nhật.</p>
+          <p className="text-sm text-zinc-500">{t('courses.contentUpdating')}</p>
         ) : (
           course.chapters.map((chapter) => (
             <div key={chapter.id} className="card p-5">
@@ -111,7 +111,7 @@ export default async function PublicCourseDetailPage({ params }: { params: Promi
                       <Lock className="h-4 w-4 text-zinc-300" />
                     )}
                     {lesson.title}
-                    {lesson.isFreePreview && <span className="chip bg-mint-100 text-mint-700">học thử</span>}
+                    {lesson.isFreePreview && <span className="chip bg-mint-100 text-mint-700">{t('courses.trial')}</span>}
                   </li>
                 ))}
               </ul>

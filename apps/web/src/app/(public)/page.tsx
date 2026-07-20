@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
+import { getT } from '@/lib/i18n/server';
 import { Sparkles, Video, BookMarked, Layers, ClipboardCheck, TrendingUp, Flower2, ArrowRight } from 'lucide-react';
 
 interface Course {
@@ -12,15 +13,6 @@ interface Course {
   price: number;
 }
 
-const FEATURES = [
-  { icon: Video, title: 'Bài giảng video', desc: 'Học theo từng bài, xem lại bất cứ lúc nào.', color: 'from-brand-400 to-brand-500' },
-  { icon: BookMarked, title: 'Từ điển tiếng Trung', desc: 'Tra chữ Hán, pinyin và nghĩa nhanh chóng.', color: 'from-mint-400 to-mint-500' },
-  { icon: Layers, title: 'Flashcards', desc: 'Ghi nhớ từ vựng theo chủ đề, học mọi lúc.', color: 'from-sun-400 to-sun-500' },
-  { icon: ClipboardCheck, title: 'Bài tập & Quiz', desc: 'Luyện tập và được giáo viên chấm điểm.', color: 'from-grape-400 to-grape-500' },
-  { icon: TrendingUp, title: 'Theo dõi tiến độ', desc: 'Biết mình đã học tới đâu, còn gì cần ôn.', color: 'from-sky-300 to-sky-400' },
-  { icon: Sparkles, title: 'Học vui mỗi ngày', desc: 'Giao diện thân thiện, tươi sáng, dễ dùng.', color: 'from-brand-400 to-sun-400' },
-];
-
 const LEVEL_COLORS: Record<string, string> = {
   HSK1: 'bg-mint-100 text-mint-700',
   HSK2: 'bg-sun-100 text-sun-700',
@@ -31,6 +23,7 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 export default async function Home() {
+  const t = await getT();
   let courses: Course[] = [];
   try {
     courses = await apiFetch<Course[]>('/courses');
@@ -38,6 +31,15 @@ export default async function Home() {
     courses = [];
   }
   const featured = courses.slice(0, 3);
+
+  const features = [
+    { icon: Video, title: t('home.f1t'), desc: t('home.f1d'), color: 'from-brand-400 to-brand-500' },
+    { icon: BookMarked, title: t('home.f2t'), desc: t('home.f2d'), color: 'from-mint-400 to-mint-500' },
+    { icon: Layers, title: t('home.f3t'), desc: t('home.f3d'), color: 'from-sun-400 to-sun-500' },
+    { icon: ClipboardCheck, title: t('home.f4t'), desc: t('home.f4d'), color: 'from-grape-400 to-grape-500' },
+    { icon: TrendingUp, title: t('home.f5t'), desc: t('home.f5d'), color: 'from-sky-300 to-sky-400' },
+    { icon: Sparkles, title: t('home.f6t'), desc: t('home.f6d'), color: 'from-brand-400 to-sun-400' },
+  ];
 
   return (
     <div className="flex flex-col">
@@ -48,25 +50,22 @@ export default async function Home() {
         <Flower2 className="absolute bottom-6 left-1/3 h-20 w-20 text-sun-200/70" />
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-6 py-16 text-center sm:py-24">
           <span className="chip bg-white/70 text-brand-600 shadow-sm">
-            <Sparkles className="h-4 w-4" /> Học tiếng Trung vui mỗi ngày
+            <Sparkles className="h-4 w-4" /> {t('home.badge')}
           </span>
           <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl">
-            Chinh phục{' '}
+            {t('home.titleA')}{' '}
             <span className="bg-gradient-to-r from-brand-500 via-sun-500 to-mint-500 bg-clip-text text-transparent">
-              tiếng Trung
+              {t('home.titleHighlight')}
             </span>{' '}
-            cùng Yuan Yuan
+            {t('home.titleB')}
           </h1>
-          <p className="max-w-xl text-lg text-zinc-500">
-            Bài giảng video, từ điển, flashcards, bài tập và theo dõi tiến độ — tất cả trong một nền tảng thân thiện,
-            dùng được trên mọi thiết bị.
-          </p>
+          <p className="max-w-xl text-lg text-zinc-500">{t('home.subtitle')}</p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link href="/register" className="btn-primary px-7 py-3 text-base">
-              Bắt đầu học miễn phí <ArrowRight className="h-5 w-5" />
+              {t('home.ctaStart')} <ArrowRight className="h-5 w-5" />
             </Link>
             <Link href="/courses" className="btn-ghost px-7 py-3 text-base">
-              Xem khóa học
+              {t('home.ctaCourses')}
             </Link>
           </div>
         </div>
@@ -74,9 +73,9 @@ export default async function Home() {
 
       {/* Features */}
       <section className="mx-auto w-full max-w-6xl px-6 py-12">
-        <h2 className="mb-8 text-center text-2xl font-extrabold sm:text-3xl">Vì sao chọn Yuan Yuan?</h2>
+        <h2 className="mb-8 text-center text-2xl font-extrabold sm:text-3xl">{t('home.whyTitle')}</h2>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
+          {features.map((f) => (
             <div key={f.title} className="card p-6 transition hover:-translate-y-1 hover:shadow-md">
               <span className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${f.color} text-white`}>
                 <f.icon className="h-6 w-6" />
@@ -92,9 +91,9 @@ export default async function Home() {
       {featured.length > 0 && (
         <section className="mx-auto w-full max-w-6xl px-6 py-12">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-extrabold sm:text-3xl">Khóa học nổi bật</h2>
+            <h2 className="text-2xl font-extrabold sm:text-3xl">{t('home.featuredTitle')}</h2>
             <Link href="/courses" className="flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">
-              Xem tất cả <ArrowRight className="h-4 w-4" />
+              {t('common.viewAll')} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -102,12 +101,12 @@ export default async function Home() {
               <Link key={course.id} href={`/courses/${course.slug}`} className="card group p-5 transition hover:-translate-y-1 hover:shadow-md">
                 <div className="flex items-center justify-between">
                   <span className={`chip ${LEVEL_COLORS[course.level] ?? 'bg-brand-100 text-brand-700'}`}>{course.level}</span>
-                  {course.isFree && <span className="chip bg-mint-100 text-mint-700">Miễn phí</span>}
+                  {course.isFree && <span className="chip bg-mint-100 text-mint-700">{t('common.free')}</span>}
                 </div>
                 <h3 className="mt-3 text-lg font-bold group-hover:text-brand-600">{course.title}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-zinc-500">{course.description}</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-                  Xem chi tiết <ArrowRight className="h-4 w-4" />
+                  {t('common.viewDetail')} <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
             ))}
@@ -120,10 +119,10 @@ export default async function Home() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 via-brand-400 to-sun-400 px-8 py-12 text-center text-white shadow-lg">
           <Flower2 className="absolute -right-4 -top-4 h-28 w-28 text-white/20" />
           <Flower2 className="absolute -bottom-6 -left-6 h-32 w-32 text-white/20" />
-          <h2 className="text-2xl font-extrabold sm:text-3xl">Sẵn sàng bắt đầu hành trình?</h2>
-          <p className="mx-auto mt-2 max-w-md text-white/90">Tạo tài khoản miễn phí và học ngay hôm nay.</p>
+          <h2 className="text-2xl font-extrabold sm:text-3xl">{t('home.ctaTitle')}</h2>
+          <p className="mx-auto mt-2 max-w-md text-white/90">{t('home.ctaSubtitle')}</p>
           <Link href="/register" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-base font-bold text-brand-600 shadow-sm transition hover:bg-brand-50">
-            Đăng ký miễn phí <ArrowRight className="h-5 w-5" />
+            {t('home.ctaButton')} <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
       </section>

@@ -1,19 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
+import { getLocale, getT } from '@/lib/i18n/server';
 import { PortalShell, type NavItem } from '@/components/PortalShell';
-
-// Sidebar per 03_Page_Specifications/page/Student/STU-001_Dashboard.md section 6
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Trang chủ', href: '/student/dashboard', icon: 'dashboard' },
-  { label: 'Tiến độ', href: '/student/progress', icon: 'progress' },
-  { label: 'Lịch học', href: '/student/calendar', icon: 'calendar' },
-  { label: 'Từ điển', href: '/dictionary', icon: 'dictionary' },
-  { label: 'Flashcards', href: '/student/flashcards', icon: 'flashcards' },
-  { label: 'Thông báo', href: '/student/notifications', icon: 'notifications' },
-  { label: 'Hồ sơ', href: '/student/profile', icon: 'profile' },
-  { label: 'AI Learning', icon: 'ai' },
-  { label: 'Chứng chỉ', icon: 'certificates' },
-];
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -21,8 +9,22 @@ export default async function StudentLayout({ children }: { children: React.Reac
     redirect('/login');
   }
 
+  const [locale, t] = await Promise.all([getLocale(), getT()]);
+
+  const navItems: NavItem[] = [
+    { label: t('nav.home'), href: '/student/dashboard', icon: 'dashboard' },
+    { label: t('nav.progress'), href: '/student/progress', icon: 'progress' },
+    { label: t('nav.calendar'), href: '/student/calendar', icon: 'calendar' },
+    { label: t('nav.dictionary'), href: '/dictionary', icon: 'dictionary' },
+    { label: t('nav.flashcards'), href: '/student/flashcards', icon: 'flashcards' },
+    { label: t('nav.notifications'), href: '/student/notifications', icon: 'notifications' },
+    { label: t('nav.profile'), href: '/student/profile', icon: 'profile' },
+    { label: t('nav.aiLearning'), icon: 'ai' },
+    { label: t('nav.certificates'), icon: 'certificates' },
+  ];
+
   return (
-    <PortalShell title="Học viên" navItems={NAV_ITEMS} user={session}>
+    <PortalShell title={t('role.student')} navItems={navItems} user={session} locale={locale}>
       {children}
     </PortalShell>
   );

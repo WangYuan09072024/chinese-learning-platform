@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { getT, type TFunction } from '@/lib/i18n/server';
 
 interface Course {
   id: string;
@@ -22,6 +23,7 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 export default async function PublicCoursesPage() {
+  const t = await getT();
   const courses = await apiFetch<Course[]>('/courses');
   const freeCourses = courses.filter((c) => c.isFree);
   const paidCourses = courses.filter((c) => !c.isFree);
@@ -29,26 +31,26 @@ export default async function PublicCoursesPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
       <div className="text-center">
-        <h1 className="text-3xl font-extrabold sm:text-4xl">Khóa học tiếng Trung</h1>
-        <p className="mt-2 text-zinc-500">Chọn khóa phù hợp với trình độ của bạn — có cả khóa miễn phí!</p>
+        <h1 className="text-3xl font-extrabold sm:text-4xl">{t('courses.title')}</h1>
+        <p className="mt-2 text-zinc-500">{t('courses.subtitle')}</p>
       </div>
 
       {courses.length === 0 ? (
-        <p className="text-center text-sm text-zinc-500">Chưa có khóa học nào được xuất bản.</p>
+        <p className="text-center text-sm text-zinc-500">{t('courses.none')}</p>
       ) : (
         <>
           {freeCourses.length > 0 && (
             <section>
               <h2 className="mb-4 flex items-center gap-2 text-xl font-extrabold">
-                <span className="chip bg-mint-100 text-mint-700">Miễn phí</span> Học ngay, không mất phí
+                <span className="chip bg-mint-100 text-mint-700">{t('common.free')}</span> {t('courses.freeSection')}
               </h2>
-              <CourseGrid courses={freeCourses} />
+              <CourseGrid courses={freeCourses} t={t} />
             </section>
           )}
           {paidCourses.length > 0 && (
             <section>
-              <h2 className="mb-4 text-xl font-extrabold">Khóa học chuyên sâu</h2>
-              <CourseGrid courses={paidCourses} />
+              <h2 className="mb-4 text-xl font-extrabold">{t('courses.paidSection')}</h2>
+              <CourseGrid courses={paidCourses} t={t} />
             </section>
           )}
         </>
@@ -57,7 +59,7 @@ export default async function PublicCoursesPage() {
   );
 }
 
-function CourseGrid({ courses }: { courses: Course[] }) {
+function CourseGrid({ courses, t }: { courses: Course[]; t: TFunction }) {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {courses.map((course) => (
@@ -65,13 +67,13 @@ function CourseGrid({ courses }: { courses: Course[] }) {
           <div className="flex items-center justify-between">
             <span className={`chip ${LEVEL_COLORS[course.level] ?? 'bg-brand-100 text-brand-700'}`}>{course.level}</span>
             <span className="text-sm font-bold text-brand-600">
-              {course.isFree ? 'Miễn phí' : `${course.price.toLocaleString('vi-VN')}đ`}
+              {course.isFree ? t('common.free') : `${course.price.toLocaleString('vi-VN')}đ`}
             </span>
           </div>
           <h3 className="mt-3 text-lg font-bold group-hover:text-brand-600">{course.title}</h3>
           <p className="mt-1 line-clamp-2 flex-1 text-sm text-zinc-500">{course.description}</p>
           <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-            Xem chi tiết <ArrowRight className="h-4 w-4" />
+            {t('common.viewDetail')} <ArrowRight className="h-4 w-4" />
           </span>
         </Link>
       ))}

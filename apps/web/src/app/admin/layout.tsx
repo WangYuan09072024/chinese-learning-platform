@@ -1,21 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
+import { getLocale, getT } from '@/lib/i18n/server';
 import { PortalShell, type NavItem } from '@/components/PortalShell';
 
 const STAFF_ROLES = ['CONTENT_MANAGER', 'FINANCE_STAFF', 'CUSTOMER_SUPPORT', 'ADMIN', 'SUPER_ADMIN'];
-
-// Sidebar per Admin Portal outline in 00_Project_Bible/00.1_Project_Overview.md
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Trang chủ', href: '/admin/dashboard', icon: 'dashboard' },
-  { label: 'Người dùng', href: '/admin/users', icon: 'users' },
-  { label: 'Khóa học', href: '/admin/courses', icon: 'courses' },
-  { label: 'Từ điển', href: '/dictionary', icon: 'dictionary' },
-  { label: 'Liên hệ', href: '/admin/contact', icon: 'contact' },
-  { label: 'Báo cáo', icon: 'reports' },
-  { label: 'Thông báo', icon: 'notifications' },
-  { label: 'CMS', icon: 'cms' },
-  { label: 'Cài đặt', icon: 'settings' },
-];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -23,8 +11,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/login');
   }
 
+  const [locale, t] = await Promise.all([getLocale(), getT()]);
+
+  const navItems: NavItem[] = [
+    { label: t('nav.home'), href: '/admin/dashboard', icon: 'dashboard' },
+    { label: t('nav.users'), href: '/admin/users', icon: 'users' },
+    { label: t('nav.courses'), href: '/admin/courses', icon: 'courses' },
+    { label: t('nav.dictionary'), href: '/dictionary', icon: 'dictionary' },
+    { label: t('nav.contact'), href: '/admin/contact', icon: 'contact' },
+    { label: t('nav.reports'), icon: 'reports' },
+    { label: t('nav.notifications'), icon: 'notifications' },
+    { label: t('nav.cms'), icon: 'cms' },
+    { label: t('nav.settings'), icon: 'settings' },
+  ];
+
   return (
-    <PortalShell title="Quản trị" navItems={NAV_ITEMS} user={session}>
+    <PortalShell title={t('role.admin')} navItems={navItems} user={session} locale={locale}>
       {children}
     </PortalShell>
   );

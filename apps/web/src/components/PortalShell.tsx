@@ -32,6 +32,9 @@ import {
 } from 'lucide-react';
 import { logout } from '@/actions/auth';
 import type { SessionUser } from '@/lib/session';
+import type { Locale } from '@/lib/i18n/config';
+import { makeT } from '@/lib/i18n/client';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export interface NavItem {
   label: string;
@@ -68,7 +71,7 @@ const ICONS: Record<string, LucideIcon> = {
   progress: BarChart3,
 };
 
-function NavLinks({ navItems, pathname, onNavigate }: { navItems: NavItem[]; pathname: string; onNavigate?: () => void }) {
+function NavLinks({ navItems, pathname, comingSoon, onNavigate }: { navItems: NavItem[]; pathname: string; comingSoon: string; onNavigate?: () => void }) {
   return (
     <nav className="flex flex-col gap-1">
       {navItems.map((item) => {
@@ -95,7 +98,7 @@ function NavLinks({ navItems, pathname, onNavigate }: { navItems: NavItem[]; pat
           <span
             key={item.label}
             className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-300 dark:text-zinc-600"
-            title="Sắp ra mắt"
+            title={comingSoon}
           >
             {Icon && <Icon className="h-[18px] w-[18px]" />}
             {item.label}
@@ -110,15 +113,19 @@ export function PortalShell({
   title,
   navItems,
   user,
+  locale,
   children,
 }: {
   title: string;
   navItems: NavItem[];
   user: SessionUser;
+  locale: Locale;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const t = makeT(locale);
+  const comingSoon = t('common.comingSoon');
 
   return (
     <div className="flex min-h-screen">
@@ -130,7 +137,7 @@ export function PortalShell({
           </span>
           <span className="text-base font-extrabold tracking-tight">{title}</span>
         </div>
-        <NavLinks navItems={navItems} pathname={pathname} />
+        <NavLinks navItems={navItems} pathname={pathname} comingSoon={comingSoon} />
       </aside>
 
       {/* Mobile drawer */}
@@ -149,7 +156,7 @@ export function PortalShell({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks navItems={navItems} pathname={pathname} onNavigate={() => setOpen(false)} />
+            <NavLinks navItems={navItems} pathname={pathname} comingSoon={comingSoon} onNavigate={() => setOpen(false)} />
           </aside>
         </div>
       )}
@@ -160,15 +167,18 @@ export function PortalShell({
             <Menu className="h-5 w-5" />
           </button>
           <span className="truncate text-sm font-medium text-zinc-500">{user.email}</span>
-          <form action={logout} className="ml-auto">
-            <button
-              type="submit"
-              className="flex items-center gap-1.5 rounded-full border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 dark:border-white/10 dark:text-brand-200"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Đăng xuất</span>
-            </button>
-          </form>
+          <div className="ml-auto flex items-center gap-2">
+            <LanguageSwitcher current={locale} />
+            <form action={logout}>
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 rounded-full border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 dark:border-white/10 dark:text-brand-200"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('common.logout')}</span>
+              </button>
+            </form>
+          </div>
         </header>
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
