@@ -22,6 +22,7 @@ import { TeacherModule } from './teacher/teacher.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { AdminModule } from './admin/admin.module';
+import { FlashcardDecksModule } from './flashcard-decks/flashcard-decks.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AdminModule } from './admin/admin.module';
     AnnouncementsModule,
     AttendanceModule,
     AdminModule,
+    FlashcardDecksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

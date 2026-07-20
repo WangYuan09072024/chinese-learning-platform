@@ -424,6 +424,32 @@ model Flashcard {
   @@map("flashcards")
 }
 
+// Admin-authored public flashcard decks grouped by topic. Any student can
+// browse and self-study them (distinct from personal Flashcard decks above).
+model FlashcardDeck {
+  id          String          @id @default(cuid())
+  topic       String
+  description String?
+  level       CourseLevel?
+  createdAt   DateTime        @default(now())
+  cards       FlashcardCard[]
+
+  @@map("flashcard_decks")
+}
+
+model FlashcardCard {
+  id      String        @id @default(cuid())
+  deckId  String
+  deck    FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  hanzi   String
+  pinyin  String
+  meaning String
+  order   Int           @default(0)
+
+  @@index([deckId])
+  @@map("flashcard_cards")
+}
+
 model DictionaryEntry {
   id          String       @id @default(cuid())
   hanzi       String

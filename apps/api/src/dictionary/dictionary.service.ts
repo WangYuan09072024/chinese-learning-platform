@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDictionaryEntryDto } from './dto/create-dictionary-entry.dto';
+import { UpdateDictionaryEntryDto } from './dto/update-dictionary-entry.dto';
 
 @Injectable()
 export class DictionaryService {
@@ -35,5 +36,31 @@ export class DictionaryService {
         antonyms: dto.antonyms ?? [],
       },
     });
+  }
+
+  async update(id: string, dto: UpdateDictionaryEntryDto) {
+    const existing = await this.prisma.dictionaryEntry.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Dictionary entry not found');
+
+    return this.prisma.dictionaryEntry.update({
+      where: { id },
+      data: {
+        hanzi: dto.hanzi,
+        pinyin: dto.pinyin,
+        meaning: dto.meaning,
+        hskLevel: dto.hskLevel,
+        radical: dto.radical,
+        audioUrl: dto.audioUrl,
+        synonyms: dto.synonyms,
+        antonyms: dto.antonyms,
+      },
+    });
+  }
+
+  async remove(id: string) {
+    const existing = await this.prisma.dictionaryEntry.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Dictionary entry not found');
+    await this.prisma.dictionaryEntry.delete({ where: { id } });
+    return { deleted: true };
   }
 }

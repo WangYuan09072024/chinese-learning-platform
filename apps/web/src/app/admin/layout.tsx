@@ -17,11 +17,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: t('nav.home'), href: '/admin/dashboard', icon: 'dashboard' },
     { label: t('nav.users'), href: '/admin/users', icon: 'users' },
     { label: t('nav.courses'), href: '/admin/courses', icon: 'courses' },
-    { label: t('nav.dictionary'), href: '/dictionary', icon: 'dictionary' },
+    { label: t('nav.dictionary'), href: '/admin/dictionary', icon: 'dictionary' },
+    { label: t('nav.flashcards'), href: '/admin/flashcards', icon: 'flashcards' },
     { label: t('nav.contact'), href: '/admin/contact', icon: 'contact' },
     { label: t('nav.reports'), href: '/admin/reports', icon: 'reports' },
     { label: t('nav.notifications'), href: '/admin/notifications', icon: 'notifications' },
-    { label: t('nav.flashcards'), icon: 'flashcards' },
     { label: t('nav.settings'), href: '/admin/settings', icon: 'settings' },
   ];
 
