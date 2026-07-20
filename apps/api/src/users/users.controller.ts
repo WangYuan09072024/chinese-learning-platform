@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/c
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateRolesDto } from './dto/update-roles.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -22,6 +23,11 @@ export class UsersController {
   @Patch('me')
   updateMe(@CurrentUser() user: RequestUser, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(user.userId, dto);
+  }
+
+  @Patch('me/password')
+  changePassword(@CurrentUser() user: RequestUser, @Body() dto: ChangePasswordDto) {
+    return this.usersService.changePassword(user.userId, dto.currentPassword, dto.newPassword);
   }
 
   @Get()

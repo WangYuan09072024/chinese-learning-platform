@@ -21,6 +21,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { TeacherModule } from './teacher/teacher.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AttendanceModule } from './attendance/attendance.module';
     TeacherModule,
     AnnouncementsModule,
     AttendanceModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

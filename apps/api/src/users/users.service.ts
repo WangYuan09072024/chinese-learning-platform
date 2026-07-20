@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -35,6 +36,18 @@ export class UsersService {
       data: { name: dto.name, phone: dto.phone, avatarUrl: dto.avatarUrl },
       select: PUBLIC_PROFILE_SELECT,
     });
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const matches = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!matches) throw new BadRequestException('Mật khẩu hiện tại không đúng');
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+    return { changed: true };
   }
 
   create(data: { email: string; passwordHash: string; name: string; roles?: Role[] }) {
