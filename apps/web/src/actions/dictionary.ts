@@ -51,3 +51,21 @@ export async function deleteEntry(id: string) {
   await apiFetch(`/dictionary/${id}`, { method: 'DELETE', token });
   revalidatePath('/admin/dictionary');
 }
+
+export interface BulkEntry {
+  hanzi: string;
+  pinyin: string;
+  meaning: string;
+  hskLevel?: string;
+}
+
+export async function bulkImport(
+  entries: BulkEntry[],
+): Promise<{ received: number; inserted: number; skipped: number } | { error: string }> {
+  const token = await getToken();
+  try {
+    return await apiFetch('/dictionary/bulk', { method: 'POST', token, body: { entries } });
+  } catch (err) {
+    return { error: err instanceof ApiError ? err.message : 'Nhập từ file thất bại.' };
+  }
+}

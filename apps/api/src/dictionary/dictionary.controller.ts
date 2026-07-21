@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } f
 import { DictionaryService } from './dictionary.service';
 import { CreateDictionaryEntryDto } from './dto/create-dictionary-entry.dto';
 import { UpdateDictionaryEntryDto } from './dto/update-dictionary-entry.dto';
+import { BulkImportDto } from './dto/bulk-import.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -22,6 +23,13 @@ export class DictionaryController {
   @Roles(Role.CONTENT_MANAGER, Role.ADMIN)
   create(@Body() dto: CreateDictionaryEntryDto) {
     return this.dictionaryService.create(dto);
+  }
+
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CONTENT_MANAGER, Role.ADMIN)
+  bulk(@Body() dto: BulkImportDto) {
+    return this.dictionaryService.bulkCreate(dto.entries);
   }
 
   @Patch(':id')

@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { Pencil, Trash2, Plus, Search, X, Check } from 'lucide-react';
 import { createEntry, updateEntry, deleteEntry } from '@/actions/dictionary';
+import { DictionaryBulkImport } from './DictionaryBulkImport';
 
 interface Entry {
   id: string;
@@ -52,6 +53,9 @@ export function DictionaryManager({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Bulk import from Excel */}
+      <DictionaryBulkImport onDone={() => load(query)} />
+
       {/* Add form */}
       <form id="add-entry-form" action={onCreate} className="card grid grid-cols-1 gap-3 p-4 sm:grid-cols-5">
         <input name="hanzi" placeholder="汉字" required className="field" />
